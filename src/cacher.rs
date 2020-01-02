@@ -63,4 +63,11 @@ mod tests {
         let mut c = Cacher::new(|s: &str| s.len());
         assert_eq!(*c.value("asdf"), 4 as usize);
     }
+
+    #[test]
+    fn tuple_argument() {
+        let mut c =
+            Cacher::new(|x: (i32, bool)| if x.1 { x.0 + 2 } else { x.0 + 1 });
+        assert_eq!(*c.value((1, false)), 2);
+    }
 }
