@@ -20,8 +20,8 @@ to increase the flexibility of the Cacher functionality.
 
 pub struct Cacher<F, A, R>
 where
-    F: Fn(A) -> R,
-    A: Eq + Hash + Copy,
+    F: Fn(&A) -> R,
+    A: Eq + Hash + Clone,
 {
     calculation: F,
     cache: HashMap<A, R>,
@@ -29,8 +29,8 @@ where
 
 impl<F, A, R> Cacher<F, A, R>
 where
-    F: Fn(A) -> R,
-    A: Eq + Hash + Copy,
+    F: Fn(&A) -> R,
+    A: Eq + Hash + Clone,
 {
     pub fn new(calculation: F) -> Cacher<F, A, R> {
         Cacher {
@@ -39,8 +39,11 @@ where
         }
     }
 
-    pub fn value(&mut self, arg: A) -> &R {
-        self.cache.entry(arg).or_insert((self.calculation)(arg))
+    pub fn value(&mut self, arg: &A) -> &R {
+        if !self.cache.contains_key(&arg) {
+            self.cache.insert(arg.clone(), (self.calculation)(arg));
+        }
+        self.cache.get(arg).unwrap()
     }
 }
 
@@ -60,14 +63,14 @@ mod tests {
 
     #[test]
     fn slice_size() {
-        let mut c = Cacher::new(|s: &str| s.len());
-        assert_eq!(*c.value("asdf"), 4 as usize);
+        let mut c = Cacher::new(|s: &&str| s.len());
+        assert_eq!(*c.value(&"asdf"), 4 as usize);
     }
 
     #[test]
     fn tuple_argument() {
         let mut c =
-            Cacher::new(|(x, b): (i32, bool)| if b { x + 2 } else { x + 1 });
-        assert_eq!(*c.value((1, false)), 2);
+            Cacher::new(|(x, b): &(i32, bool)| if *b { x + 2 } else { x + 1 });
+        assert_eq!(*c.value(&(1, false)), 2);
     }
 }
