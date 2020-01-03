@@ -18,7 +18,7 @@ values, for example. To fix this issue, try introducing more generic parameters
 to increase the flexibility of the Cacher functionality.
 */
 
-struct Cacher<F, A, R>
+pub struct Cacher<F, A, R>
 where
     F: Fn(A) -> R,
     A: Eq + Hash + Copy,
@@ -32,14 +32,14 @@ where
     F: Fn(A) -> R,
     A: Eq + Hash + Copy,
 {
-    fn new(calculation: F) -> Cacher<F, A, R> {
+    pub fn new(calculation: F) -> Cacher<F, A, R> {
         Cacher {
             calculation,
             cache: HashMap::new(),
         }
     }
 
-    fn value(&mut self, arg: A) -> &R {
+    pub fn value(&mut self, arg: A) -> &R {
         self.cache.entry(arg).or_insert((self.calculation)(arg))
     }
 }
