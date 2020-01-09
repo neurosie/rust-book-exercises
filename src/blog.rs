@@ -81,11 +81,18 @@ mod tests {
 
     #[test]
     fn reject() {
-        let post = Post::new();
+        let mut post = Post::new();
 
-        let post = post.request_review(1);
+        post.add_text("oh boy salad");
 
-        let _post = post.reject();
+        let post = post
+            .request_review(1)
+            .reject()
+            .request_review(1)
+            .approve()
+            .unwrap();
+
+        assert_eq!("oh boy salad", post.content());
     }
 
     #[test]
@@ -94,10 +101,12 @@ mod tests {
 
         post.add_text("salad tiem");
 
-        let post = post.request_review(2);
-
-        let post = post.approve().unwrap_err();
-        let post = post.approve().unwrap();
+        let post = post
+            .request_review(2)
+            .approve()
+            .unwrap_err()
+            .approve()
+            .unwrap();
 
         assert_eq!("salad tiem", post.content());
     }
